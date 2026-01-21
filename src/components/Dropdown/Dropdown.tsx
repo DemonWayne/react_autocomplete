@@ -1,6 +1,6 @@
 import debounce from 'lodash.debounce';
 import { Person } from '../../types/Person';
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 
 interface DropdownProps {
   people: Person[];
@@ -17,6 +17,7 @@ export const Dropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [appliedQuery, setAppliedQuery] = useState('');
   const previousQueryRef = useRef('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const applyFilterDebounced = useMemo(
     () =>
@@ -65,9 +66,24 @@ export const Dropdown = ({
     setIsOpen(true);
   };
 
-  const handleInputBlur = () => {
-    setIsOpen(false);
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleItemClick = useCallback(
     (person: Person) => {
@@ -83,7 +99,10 @@ export const Dropdown = ({
 
   return (
     <>
-      <div className={`dropdown ${isOpen ? 'is-active' : ''}`}>
+      <div
+        className={`dropdown ${isOpen ? 'is-active' : ''}`}
+        ref={dropdownRef}
+      >
         <div className="dropdown-trigger">
           <input
             type="text"
@@ -93,7 +112,6 @@ export const Dropdown = ({
             value={query}
             onChange={handleInputChange}
             onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
           />
         </div>
 
@@ -109,7 +127,7 @@ export const Dropdown = ({
                   key={person.slug}
                   className="dropdown-item"
                   data-cy="suggestion-item"
-                  onMouseDown={() => handleItemClick(person)}
+                  onClick={() => handleItemClick(person)}
                   style={{ cursor: 'pointer' }}
                 >
                   <p
