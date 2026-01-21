@@ -65,6 +65,10 @@ export const Dropdown = ({
     setIsOpen(true);
   };
 
+  const handleInputBlur = () => {
+    setIsOpen(false);
+  };
+
   const handleItemClick = useCallback(
     (person: Person) => {
       setQuery(person.name);
@@ -89,6 +93,7 @@ export const Dropdown = ({
             value={query}
             onChange={handleInputChange}
             onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
           />
         </div>
 
@@ -104,7 +109,7 @@ export const Dropdown = ({
                   key={person.slug}
                   className="dropdown-item"
                   data-cy="suggestion-item"
-                  onClick={() => handleItemClick(person)}
+                  onMouseDown={() => handleItemClick(person)}
                   style={{ cursor: 'pointer' }}
                 >
                   <p
